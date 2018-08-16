@@ -1,0 +1,9 @@
+[Core]
+Name = RSVP
+Module = rsvp
+
+[Documentation]
+Description = A plugin to RSVP to the RSVP app
+
+[Python]
+Version = 2+

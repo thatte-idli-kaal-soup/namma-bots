@@ -102,3 +102,4 @@ ENV/
 
 # Local direnv
 /.envrc
+/errbot-backend-zulip/

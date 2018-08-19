@@ -85,7 +85,7 @@ class RSVP(BotPlugin):
 
         event = self.get_event(event_id)
         names = [
-            rsvp['user']['nick'] or rsvp['user']['name']
+            rsvp['user'].get('nick', rsvp['user']['name'])
             for rsvp in event['rsvps']
             if not rsvp['cancelled']
         ]

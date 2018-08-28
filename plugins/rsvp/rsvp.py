@@ -69,7 +69,7 @@ class RSVP(BotPlugin):
             return 'Failed to RSVP'
 
         rsvp_id = response.get('_id', {}).get('$oid', '')
-        return "Successfully RSVP'd" if rsvp_id else response.get(
+        return self.rsvp_list(msg, args) if rsvp_id else response.get(
             'error', 'Failed to RSVP'
         )
 
@@ -78,7 +78,7 @@ class RSVP(BotPlugin):
         """List of RSVPs for an event"""
         try:
             event_id = self.get_event_id(msg)
-        except Exception as e:
+        except Exception:
             event_id = None
         if not event_id:
             return 'Could not find event'

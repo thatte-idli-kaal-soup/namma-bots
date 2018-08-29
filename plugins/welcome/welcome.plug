@@ -1,0 +1,9 @@
+[Core]
+Name = Welcome
+Module = welcome
+
+[Documentation]
+Description = A plugin to welcome new users
+
+[Python]
+Version = 2+

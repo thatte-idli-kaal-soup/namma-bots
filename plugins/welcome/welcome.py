@@ -12,4 +12,4 @@ class Welcome(BotPlugin):
     @botcmd
     def welcome(self, msg, args):
         """Welcome new users"""
-        return MESSAGE.format(args)
+        return MESSAGE.format(args.strip())

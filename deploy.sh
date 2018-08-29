@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 git push origin master
 
 ssh muse-amuse.in <<EOF

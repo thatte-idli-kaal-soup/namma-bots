@@ -2,11 +2,12 @@ from datetime import datetime, timedelta
 import os
 import re
 
+import dateparser
 from errbot import BotPlugin, botcmd
 import requests
 
 # FIXME: Worth making this a config?
-BASE_URL = 'https://rsvp.thatteidlikaalsoup.team/api'
+BASE_URL = 'https://rsvp.thatteidlikaalsoup.team/'
 
 
 class RSVP(BotPlugin):
@@ -24,7 +25,7 @@ class RSVP(BotPlugin):
         name, date = match.groups()
         start_date = datetime.strptime(date, '%Y-%m-%d %H:%M')
         end_date = start_date + timedelta(days=1)
-        url = '{}/events/?start={:%Y-%m-%d}&end={:%Y-%m-%d}'.format(
+        url = '{}/api/events/?start={:%Y-%m-%d}&end={:%Y-%m-%d}'.format(
             BASE_URL, start_date, end_date
         )
         events = requests.get(url, headers=headers).json()
@@ -37,7 +38,7 @@ class RSVP(BotPlugin):
         headers = {
             'Authorization': 'token {}'.format(os.environ['RSVP_TOKEN'])
         }
-        url = '{}/rsvps/{}'.format(BASE_URL, event_id)
+        url = '{}/api/rsvps/{}'.format(BASE_URL, event_id)
         response = requests.post(
             url, json={'user': email}, headers=headers
         ).json()
@@ -48,7 +49,7 @@ class RSVP(BotPlugin):
         headers = {
             'Authorization': 'token {}'.format(os.environ['RSVP_TOKEN'])
         }
-        url = '{}/rsvps/{}'.format(BASE_URL, event_id)
+        url = '{}/api/rsvps/{}'.format(BASE_URL, event_id)
         response = requests.get(url, headers=headers).json()
         return response
 
@@ -97,3 +98,31 @@ class RSVP(BotPlugin):
         )
         content = 'All RSVPs:\n\n{}'.format(rsvp_list)
         return content if names else 'No RSVPs'
+
+    @botcmd
+    def rsvp_create(self, msg, args):
+        """Create a new RSVP event"""
+        title, date, description = args.strip().split('\n', 2)
+        parsed_date = dateparser.parse(
+            date, settings={'PREFER_DATES_FROM': 'future'}
+        )
+        try:
+            date, time = parsed_date.date(), parsed_date.time()
+        except AttributeError:
+            return 'Could not parse date'
+
+        url = '{}/event'.format(BASE_URL)
+        headers = {
+            'Authorization': 'token {}'.format(os.environ['RSVP_TOKEN'])
+        }
+        response = requests.post(
+            url,
+            data={
+                'date': date,
+                'time': time,
+                'event-name': title,
+                'event-description': description,
+            },
+            headers=headers,
+        )
+        return 'Success!'

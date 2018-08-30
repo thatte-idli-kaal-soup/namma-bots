@@ -99,8 +99,8 @@ class RSVP(BotPlugin):
         content = 'All RSVPs:\n\n{}'.format(rsvp_list)
         return content if names else 'No RSVPs'
 
-    @botcmd(split_args_with='\n')
-    def create_rsvp(self, msg, args):
+    @botcmd
+    def rsvp_create(self, msg, args):
         """Create a new RSVP event"""
         title, date, description = args.strip().split('\n', 2)
         parsed_date = dateparser.parse(

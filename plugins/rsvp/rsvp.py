@@ -136,8 +136,10 @@ class RSVP(BotPlugin):
     # name "create rsvp ". Errbot code splits on ' ' when trying to figure out
     # the command name, and if there's no space after the command name, but a
     # new-line, the match fails! We hack around this by using a regexp command.
-    @re_botcmd(pattern='rsvp create\s+([\s\S]*)')
-    def rsvp_create(self, msg, match):
+    # Also, command name cannot start with rsvp, since rsvp list matches first
+    # and this command never runs!
+    @re_botcmd(pattern='create rsvp\s+([\s\S]*)')
+    def create_rsvp(self, msg, match):
         """Create a new RSVP event"""
         info, = match.groups()
         name, date, description = info.strip().split('\n', 2)

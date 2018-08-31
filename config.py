@@ -17,3 +17,4 @@ BOT_IDENTITY = {  # Fill this with the corresponding values in your bot's `.zuli
 BOT_ADMINS = ('punchagan@muse-amuse.in',)
 CHATROOM_PRESENCE = ()
 BOT_PREFIX = '@**Edison** '
+BOT_PREFIX_OPTIONAL_ON_CHAT = True

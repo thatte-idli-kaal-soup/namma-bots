@@ -3,7 +3,7 @@ import os
 import re
 
 import dateparser
-from errbot import BotPlugin, botcmd
+from errbot import arg_botcmd, BotPlugin, botcmd
 import requests
 
 # FIXME: Worth making this a config?
@@ -100,7 +100,7 @@ class RSVP(BotPlugin):
         return content if names else 'No RSVPs'
 
     @botcmd
-    def rsvp_create(self, msg, args):
+    def create_rsvp(self, msg, args):
         """Create a new RSVP event"""
         title, date, description = args.strip().split('\n', 2)
         parsed_date = dateparser.parse(

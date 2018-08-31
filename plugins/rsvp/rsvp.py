@@ -3,7 +3,7 @@ import os
 import re
 
 import dateparser
-from errbot import arg_botcmd, BotPlugin, botcmd
+from errbot import BotPlugin, botcmd, re_botcmd
 import requests
 
 # FIXME: Worth making this a config?
@@ -14,24 +14,28 @@ class RSVP(BotPlugin):
     """Plugin to enable RSVPing from Zulip."""
 
     @staticmethod
-    def get_event_id(msg):
+    def get_event_id(name, date):
+        next_day = date + timedelta(days=1)
+        url = '{}/api/events/?start={:%Y-%m-%d}&end={:%Y-%m-%d}'.format(
+            BASE_URL, date, next_day
+        )
         headers = {
             'Authorization': 'token {}'.format(os.environ['RSVP_TOKEN'])
         }
+        events = requests.get(url, headers=headers).json()
+        events = [event for event in events if event['name'] == name]
+        if len(events) == 1:
+            return events[0]['_id']['$oid']
+
+    @staticmethod
+    def get_event_id_from_message(msg):
         match = re.match(
             '(?P<name>.*) - (?P<date>\d{4}-\d{2}-\d{2} \d{2}:\d{2})',
             msg.to.subject,
         )
         name, date = match.groups()
         start_date = datetime.strptime(date, '%Y-%m-%d %H:%M')
-        end_date = start_date + timedelta(days=1)
-        url = '{}/api/events/?start={:%Y-%m-%d}&end={:%Y-%m-%d}'.format(
-            BASE_URL, start_date, end_date
-        )
-        events = requests.get(url, headers=headers).json()
-        events = [event for event in events if event['name'] == name]
-        if len(events) == 1:
-            return events[0]['_id']['$oid']
+        return RSVP.get_event_id(name, start_date)
 
     @staticmethod
     def do_rsvp(event_id, email):
@@ -58,7 +62,7 @@ class RSVP(BotPlugin):
         """RSVP to the app"""
         sender_email = args.strip().split()[0] if args else msg.frm.id
         try:
-            event_id = self.get_event_id(msg)
+            event_id = self.get_event_id_from_message(msg)
         except Exception:
             event_id = None
         if not event_id:
@@ -78,7 +82,7 @@ class RSVP(BotPlugin):
     def rsvp_list(self, msg, args):
         """List of RSVPs for an event"""
         try:
-            event_id = self.get_event_id(msg)
+            event_id = self.get_event_id_from_message(msg)
         except Exception:
             event_id = None
         if not event_id:
@@ -99,18 +103,8 @@ class RSVP(BotPlugin):
         content = 'All RSVPs:\n\n{}'.format(rsvp_list)
         return content if names else 'No RSVPs'
 
-    @botcmd
-    def create_rsvp(self, msg, args):
-        """Create a new RSVP event"""
-        title, date, description = args.strip().split('\n', 2)
-        parsed_date = dateparser.parse(
-            date, settings={'PREFER_DATES_FROM': 'future'}
-        )
-        try:
-            date, time = parsed_date.date(), parsed_date.time()
-        except AttributeError:
-            return 'Could not parse date'
-
+    @staticmethod
+    def create_event(name, date, time, description):
         url = '{}/event'.format(BASE_URL)
         headers = {
             'Authorization': 'token {}'.format(os.environ['RSVP_TOKEN'])
@@ -120,9 +114,43 @@ class RSVP(BotPlugin):
             data={
                 'date': date,
                 'time': time,
-                'event-name': title,
+                'event-name': name,
                 'event-description': description,
             },
             headers=headers,
         )
-        return 'Success!'
+        return 'Success!' if response.status_code == 200 else 'Failed'
+
+    @staticmethod
+    def update_event(event_id, description):
+        url = '{}/api/event/{}'.format(BASE_URL, event_id)
+        headers = {
+            'Authorization': 'token {}'.format(os.environ['RSVP_TOKEN'])
+        }
+        response = requests.patch(
+            url, json={'description': description}, headers=headers
+        )
+        return 'Successfully updated event' if response.status_code == 200 else 'Failed'
+
+    # HACK: Need a regex command to allow not having a space after the command
+    # name "create rsvp ". Errbot code splits on ' ' when trying to figure out
+    # the command name, and if there's no space after the command name, but a
+    # new-line, the match fails! We hack around this by using a regexp command.
+    @re_botcmd(pattern='rsvp create\s+([\s\S]*)')
+    def rsvp_create(self, msg, match):
+        """Create a new RSVP event"""
+        info, = match.groups()
+        name, date, description = info.strip().split('\n', 2)
+        parsed_date = dateparser.parse(
+            date, settings={'PREFER_DATES_FROM': 'future'}
+        )
+        try:
+            date, time = parsed_date.date(), parsed_date.time()
+        except AttributeError:
+            return 'Could not parse date'
+
+        event_id = self.get_event_id(name, date)
+        if not event_id:
+            return self.create_event(name, date, time, description)
+
+        return self.update_event(event_id, description)

@@ -8,6 +8,8 @@ Check out the tour [here](https://zulipchat.com/hello/) to get a quick overview 
 
 If you are on a desktop, set your zoom level to 120% or so, to make the UI less overwhelming (`Ctrl+Shift++`)
 
+It might also be useful to tweak your [notification settings](#settings/notifications).
+
 **A few keyboard shortcuts**
 
 - `Ctrl + Enter` sends a new message. (can be changed by clicking a checkbox below compose box)

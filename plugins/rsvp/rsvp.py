@@ -35,7 +35,7 @@ class RSVP(BotPlugin):
             '(?P<date>\d{4}-\d{2}-\d{2} \d{2}:\d{2}) - (?P<name>.*)',
             msg.to.subject,
         )
-        name, date = match.groups()
+        date, name = match.groups()
         start_date = datetime.strptime(date, '%Y-%m-%d %H:%M')
         return RSVP.get_event_id(name, start_date)
 

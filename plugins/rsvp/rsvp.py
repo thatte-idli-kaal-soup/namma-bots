@@ -15,6 +15,8 @@ class RSVP(BotPlugin):
 
     @staticmethod
     def get_event_id(name, date):
+        if name.endswith('...'):
+            name = name[:-4]
         next_day = date + timedelta(days=1)
         url = '{}/api/events/?start={:%Y-%m-%d}&end={:%Y-%m-%d}'.format(
             BASE_URL, date, next_day
@@ -23,14 +25,14 @@ class RSVP(BotPlugin):
             'Authorization': 'token {}'.format(os.environ['RSVP_TOKEN'])
         }
         events = requests.get(url, headers=headers).json()
-        events = [event for event in events if event['name'] == name]
+        events = [event for event in events if event['name'].startswith(name)]
         if len(events) == 1:
             return events[0]['_id']['$oid']
 
     @staticmethod
     def get_event_id_from_message(msg):
         match = re.match(
-            '(?P<name>.*) - (?P<date>\d{4}-\d{2}-\d{2} \d{2}:\d{2})',
+            '(?P<date>\d{4}-\d{2}-\d{2} \d{2}:\d{2}) - (?P<name>.*)',
             msg.to.subject,
         )
         name, date = match.groups()

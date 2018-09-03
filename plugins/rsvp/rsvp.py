@@ -13,6 +13,12 @@ BASE_URL = 'https://rsvp.thatteidlikaalsoup.team/'
 class RSVP(BotPlugin):
     """Plugin to enable RSVPing from Zulip."""
 
+    def get_member_email(self, msg, mention):
+        name = mention.strip('@*')
+        members = msg.to._client.get_members()['members']
+        members = [member for member in members if member['full_name'] == name]
+        return members[0]['email']
+
     @staticmethod
     def get_event_id(name, date):
         if name.endswith('...'):
@@ -63,6 +69,8 @@ class RSVP(BotPlugin):
     def rsvp(self, msg, args):
         """RSVP to the app"""
         sender_email = args.strip().split()[0] if args else msg.frm.id
+        if sender_email.startswith('@**'):
+            sender_email = self.get_member_email(msg, sender_email)
         try:
             event_id = self.get_event_id_from_message(msg)
         except Exception:

@@ -2,7 +2,7 @@ from errbot import BotPlugin, botcmd
 
 MESSAGE = """{}, welcome to :zulip:!
 
-This Zulip realm is private. The only people with access are the members of the TIKS family. Content is not publicly searchable. While they may be online, conversations here are akin to private talk amongst friends, so please use good judgement before sharing things people write here.
+This Zulip realm is private. The only people with access are the members of the TIKS family. Content is not publicly searchable. While they may be online, conversations here are akin to private talk amongst friends, so please use good judgement before sharing things people write here. It is best to ask for permission before sharing anything written here. Ensure that this place continues feel like a safe space to share feelings that folks would otherwise not be comfortable sharing.
 
 Check out the tour [here](https://zulipchat.com/hello/) to get a quick overview of Zulip's streams and topics.
 

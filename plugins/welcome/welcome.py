@@ -2,6 +2,8 @@ from errbot import BotPlugin, botcmd
 
 MESSAGE = """{}, welcome to :zulip:!
 
+This Zulip realm is private. The only people with access are the members of the TIKS family. Content is not publicly searchable. While they may be online, conversations here are akin to private talk amongst friends, so please use good judgement before sharing things people write here.
+
 Check out the tour [here](https://zulipchat.com/hello/) to get a quick overview of Zulip's streams and topics.
 
 [This comic](https://pbs.twimg.com/media/DbCNzaPX4AATH1A.jpg) gives the same overview, if you prefer hand drawn comics!

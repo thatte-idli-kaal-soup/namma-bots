@@ -10,6 +10,10 @@ import requests
 BASE_URL = 'https://rsvp.thatteidlikaalsoup.team/'
 
 
+def date_replace_period_with_colon(date):
+    return re.sub('(\d+)\.(\d+)', '\\1:\\2', date)
+
+
 class RSVP(BotPlugin):
     """Plugin to enable RSVPing from Zulip."""
 
@@ -154,7 +158,8 @@ class RSVP(BotPlugin):
         info, = match.groups()
         name, date, description = info.strip().split('\n', 2)
         parsed_date = dateparser.parse(
-            date, settings={'PREFER_DATES_FROM': 'future'}
+            date_replace_period_with_colon(date),
+            settings={'PREFER_DATES_FROM': 'future'},
         )
         try:
             date, time = parsed_date.date(), parsed_date.time()

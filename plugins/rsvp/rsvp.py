@@ -6,22 +6,31 @@ import dateparser
 from errbot import BotPlugin, botcmd, re_botcmd
 import requests
 
-# FIXME: Worth making this a config?
-BASE_URL = 'https://rsvp.thatteidlikaalsoup.team/'
+# NOTE: Shouldn't end with a /
+BASE_URL = 'https://rsvp.thatteidlikaalsoup.team'
 
 
 def date_replace_period_with_colon(date):
     return re.sub('(\d+)\.(\d+)', '\\1:\\2', date)
 
 
+def is_email(text):
+    return re.match('[^@]+@[^@]+\.[^@]+', text)
+
+
 class RSVP(BotPlugin):
     """Plugin to enable RSVPing from Zulip."""
 
-    def get_member_email(self, msg, mention):
-        name = mention.strip('@*')
-        members = msg.to._client.get_members()['members']
-        members = [member for member in members if member['full_name'] == name]
-        return members[0]['email']
+    def get_user_email(self, msg, name_or_nick):
+        users = self.get_users()
+        users = [
+            user
+            for user in users
+            if user.get('nick', '') == name_or_nick
+            or user.get('name', '') == name_or_nick
+        ]
+        if len(users) == 1:
+            return users[0]['_id']
 
     @staticmethod
     def get_event_id(name, date):
@@ -69,12 +78,23 @@ class RSVP(BotPlugin):
         response = requests.get(url, headers=headers).json()
         return response
 
+    @staticmethod
+    def get_users():
+        headers = {
+            'Authorization': 'token {}'.format(os.environ['RSVP_TOKEN'])
+        }
+        url = '{}/api/users/'.format(BASE_URL)
+        return requests.get(url, headers=headers).json()
+
     @botcmd
     def rsvp(self, msg, args):
         """RSVP to the app"""
-        sender_email = args.strip().split()[0] if args else msg.frm.id
-        if sender_email.startswith('@**'):
-            sender_email = self.get_member_email(msg, sender_email)
+        sender_email = args.strip() if args else msg.frm.id
+        if not is_email(sender_email):
+            sender_email = self.get_user_email(msg, sender_email)
+        if not sender_email:
+            return 'User not found'
+
         try:
             event_id = self.get_event_id_from_message(msg)
         except Exception:

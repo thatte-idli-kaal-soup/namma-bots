@@ -128,7 +128,7 @@ class RSVP(BotPlugin):
         names = [
             (
                 rsvp["user"].get("nick", "").strip() or rsvp["user"]["name"],
-                rsvp["note"],
+                rsvp.get("note"),
             )
             for rsvp in event["rsvps"]
             if not rsvp["cancelled"]

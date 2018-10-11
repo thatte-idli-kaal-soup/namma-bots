@@ -126,14 +126,19 @@ class RSVP(BotPlugin):
 
         event = self.get_event(event_id)
         names = [
-            rsvp["user"].get("nick", "").strip() or rsvp["user"]["name"]
+            (
+                rsvp["user"].get("nick", "").strip() or rsvp["user"]["name"],
+                rsvp["note"],
+            )
             for rsvp in event["rsvps"]
             if not rsvp["cancelled"]
         ]
         rsvp_list = "\n".join(
             [
-                "{}. {}".format(i, name)
-                for (i, name) in enumerate(names, start=1)
+                "{}. {} *({})*".format(i, name, note)
+                if note
+                else "{}. {}".format(i, name, note)
+                for (i, (name, note)) in enumerate(names, start=1)
             ]
         )
         content = "All RSVPs:\n\n{}".format(rsvp_list)

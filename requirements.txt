@@ -19,7 +19,7 @@ pycparser==2.18
 Pygments==2.2.0
 pygments-markdown-lexer==0.1.0.dev39
 pyOpenSSL==18.0.0
-requests==2.19.1
+requests==2.20.1
 rocket-errbot==1.2.5
 six==1.11.0
 typing==3.6.4

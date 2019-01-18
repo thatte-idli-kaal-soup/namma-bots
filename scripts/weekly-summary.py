@@ -181,6 +181,19 @@ def send_email(to_users, subject, html_body):
     return int(response.status_code / 200) == 2
 
 
+def show_html_email(content):
+    import tempfile
+    import time
+    import webbrowser
+
+    with tempfile.NamedTemporaryFile(
+        mode="w", encoding="utf8", suffix="html"
+    ) as f:
+        f.write(content)
+        webbrowser.open_new_tab(f.name)
+        time.sleep(1)
+
+
 if __name__ == "__main__":
     end_date = datetime.datetime.now()
     weekday = end_date.strftime("%A")
@@ -196,4 +209,7 @@ if __name__ == "__main__":
         for member in client.get_members()["members"]
         if not member["is_bot"]
     ]
-    send_email(users, subject, content)
+    if "SENDGRID_API_KEY" in env:
+        send_email(users, subject, content)
+    else:
+        show_html_email(content)

@@ -10,7 +10,7 @@ BOT_EXTRA_PLUGIN_DIR = join(HERE, "plugins")
 BOT_LOG_FILE = join(HERE, "errbog.log")
 BOT_LOG_LEVEL = logging.INFO
 BOT_IDENTITY = {  # Fill this with the corresponding values in your bot's `.zuliprc`
-    "email": "edison-bot@namma-loafers.zulipchat.com",
+    "email": os.environ.get("ZULIP_API_EMAIL"),
     "key": os.environ.get("ZULIP_API_SECRET"),
     "site": "https://namma-loafers.zulipchat.com",
 }

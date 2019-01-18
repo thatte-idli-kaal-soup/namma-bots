@@ -8,13 +8,17 @@ import sys
 import urllib
 
 import jinja2
+import sendgrid
+from sendgrid.helpers.mail import Email, Content, Mail, Personalization
 import zulip
 
 
 HERE = dirname(abspath(__file__))
 EMAIL = os.environ.get("ZULIP_API_EMAIL")
 API_KEY = os.environ.get("ZULIP_API_SECRET")
+SENDER_EMAIL = os.environ.get("SENDER_EMAIL")
 SITE = EMAIL.split("@")[-1]
+TITLE_FORMAT = "{} weekly summary ({:%d %b} to {:%d %b})"
 client = zulip.Client(email=EMAIL, api_key=API_KEY, site=SITE)
 
 # Helpers to generate urls from zulip server repo: zerver.lib.url_encoding
@@ -125,9 +129,7 @@ def create_email_body(messages, start_date, end_date):
     )
     env.install_null_translations()
     template = env.get_template("weekly-summary-template.html")
-    title = "Zulip weekly summary ({:%d %b} to {:%d %b})".format(
-        start_date, end_date
-    )
+    title = TITLE_FORMAT.format(SITE, start_date, end_date)
     return template.render(
         all_messages=messages,
         title=title,
@@ -154,6 +156,29 @@ def sort_streams(data):
         (stream_name, sort_topics(stream_data))
         for stream_name, stream_data in data
     ]
+
+
+def send_email(to_users, subject, html_body):
+    sg = sendgrid.SendGridAPIClient(apikey=os.environ.get("SENDGRID_API_KEY"))
+    from_email = Email(SENDER_EMAIL)
+    content = Content("text/html", html_body)
+    to_emails = [
+        Email("{} <{}>".format(name, email)) for name, email in to_users
+    ]
+    mail = Mail(from_email, subject, to_emails[0], content)
+    for to_email in to_emails[1:]:
+        personalization = Personalization()
+        personalization.add_to(to_email)
+        mail.add_personalization(personalization)
+    print("Sending email...")
+    try:
+        response = sg.client.mail.send.post(request_body=mail.get())
+    except Exception as e:
+        # FIXME: Silently failing...
+        print(e)
+        return False
+
+    return int(response.status_code / 200) == 2
 
 
 if __name__ == "__main__":

@@ -136,6 +136,11 @@
                                             {% trans count=messages|length %} {{ count }} message {% pluralize %}{{ count }} messages {% endtrans %} with {% trans count=messages|groupby('sender_email')|length %} {{ count }} participant {% pluralize %}{{ count }} participants {% endtrans %}
 
                                         </div>
+                                        <div class="body-text" style="font-family:Helvetica, Arial, sans-serif;font-size:12px;line-height:20px;text-align:left;color:#333333">
+                                            {% for sentence in summarizer.get_summary(stream, topic) %}
+                                                <div>{{ markdown(sentence)|safe }}</div>
+                                            {% endfor %}
+                                        </div>
                                         <br>
                                     {% endfor %}
                                 {% endfor %}

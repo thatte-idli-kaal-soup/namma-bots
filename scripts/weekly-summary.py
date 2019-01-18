@@ -3,11 +3,15 @@
 from collections import defaultdict
 import datetime
 from os import environ as env
+import re
 from os.path import abspath, dirname, join
 import sys
 import urllib
 
+
+from lexrank import LexRank, STOPWORDS
 import jinja2
+import numpy as np
 import sendgrid
 from sendgrid.helpers.mail import Email, Content, Mail, Personalization
 import zulip
@@ -21,7 +25,7 @@ SITE = EMAIL.split("@")[-1]
 TITLE_FORMAT = "{} weekly summary ({:%d %b} to {:%d %b})"
 client = zulip.Client(email=EMAIL, api_key=API_KEY, site=SITE)
 
-# Helpers to generate urls from zulip server repo: zerver.lib.url_encoding
+# #### Helpers to generate urls from zulip server repo: zerver.lib.url_encoding
 
 
 def hash_util_encode(string: str) -> str:
@@ -48,6 +52,47 @@ def topic_narrow_url(site, stream_id, stream_name, topic) -> str:
         encode_stream(stream_id, stream_name),
         hash_util_encode(topic),
     )
+
+
+##########################################################################
+
+
+class Summarizer:
+    def __init__(self, all_messages):
+        self.documents = {}
+        for stream, data in all_messages.items():
+            for topic, messages in data["topics"].items():
+                text = "\n".join(
+                    self.clean_content(message) for message in messages
+                )
+                self.documents[(stream, topic)] = [
+                    sentence.strip()
+                    for sentence in text.splitlines()
+                    if sentence.strip()
+                ]
+        self.summarizer = LexRank(
+            self.documents.values(),
+            keep_emails=True,
+            keep_urls=True,
+            stopwords=STOPWORDS["en"],
+        )
+
+    def get_summary(self, stream, topic):
+        document = self.documents[(stream, topic)]
+        threshold = 0.03
+        summary_size = 2 if len(document) > 5 else 1
+        fast_power_method = True
+        lex_scores = self.summarizer.rank_sentences(
+            document, threshold=threshold, fast_power_method=fast_power_method
+        )
+
+        sorted_ix = np.argsort(lex_scores)[::-1]
+        return [document[i] for i in sorted(sorted_ix[:summary_size])]
+
+    @staticmethod
+    def clean_content(message):
+        content = message["content"]
+        return re.sub("([.?!])\s", "\\1\n", content)
 
 
 ##########################################################################
@@ -123,18 +168,23 @@ def get_messages_in_timeperiod(start_date, end_date):
     return all_messages
 
 
-def create_email_body(messages, start_date, end_date):
+def create_email_body(messages, start_date, end_date, summarizer):
     env = jinja2.Environment(
         extensions=["jinja2.ext.i18n"], loader=jinja2.FileSystemLoader(HERE)
     )
     env.install_null_translations()
     template = env.get_template("weekly-summary-template.html")
     title = TITLE_FORMAT.format(SITE, start_date, end_date)
+    import markdown
+
+    markdown = markdown.markdown
     return template.render(
         all_messages=messages,
         title=title,
         site=SITE,
         topic_narrow_url=topic_narrow_url,
+        summarizer=summarizer,
+        markdown=markdown,
     )
 
 
@@ -202,7 +252,8 @@ if __name__ == "__main__":
     start_date = end_date - datetime.timedelta(days=7)
     all_messages = get_messages_in_timeperiod(start_date, end_date)
     messages = sort_streams(all_messages)
-    content = create_email_body(messages, start_date, end_date)
+    summarizer = Summarizer(all_messages)
+    content = create_email_body(messages, start_date, end_date, summarizer)
     subject = TITLE_FORMAT.format(SITE, start_date, end_date)
     users = [
         (member["full_name"], member["email"])

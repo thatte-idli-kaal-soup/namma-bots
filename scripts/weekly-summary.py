@@ -2,7 +2,7 @@
 
 from collections import defaultdict
 import datetime
-import os
+from os import environ as env
 from os.path import abspath, dirname, join
 import sys
 import urllib
@@ -14,9 +14,9 @@ import zulip
 
 
 HERE = dirname(abspath(__file__))
-EMAIL = os.environ.get("ZULIP_API_EMAIL")
-API_KEY = os.environ.get("ZULIP_API_SECRET")
-SENDER_EMAIL = os.environ.get("SENDER_EMAIL")
+EMAIL = env.get("ZULIP_API_EMAIL")
+API_KEY = env.get("ZULIP_API_SECRET")
+SENDER_EMAIL = env.get("SENDER_EMAIL")
 SITE = EMAIL.split("@")[-1]
 TITLE_FORMAT = "{} weekly summary ({:%d %b} to {:%d %b})"
 client = zulip.Client(email=EMAIL, api_key=API_KEY, site=SITE)
@@ -159,7 +159,7 @@ def sort_streams(data):
 
 
 def send_email(to_users, subject, html_body):
-    sg = sendgrid.SendGridAPIClient(apikey=os.environ.get("SENDGRID_API_KEY"))
+    sg = sendgrid.SendGridAPIClient(apikey=env.get("SENDGRID_API_KEY"))
     from_email = Email(SENDER_EMAIL)
     content = Content("text/html", html_body)
     to_emails = [
@@ -183,6 +183,9 @@ def send_email(to_users, subject, html_body):
 
 if __name__ == "__main__":
     end_date = datetime.datetime.now()
+    weekday = end_date.strftime("%A")
+    if "DYNO" in env and weekday != env["HEROKU_CRON_DAY"]:
+        sys.exit("Not running script today - {}".format(weekday))
     start_date = end_date - datetime.timedelta(days=7)
     all_messages = get_messages_in_timeperiod(start_date, end_date)
     messages = sort_streams(all_messages)

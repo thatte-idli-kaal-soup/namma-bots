@@ -187,3 +187,10 @@ if __name__ == "__main__":
     all_messages = get_messages_in_timeperiod(start_date, end_date)
     messages = sort_streams(all_messages)
     content = create_email_body(messages, start_date, end_date)
+    subject = TITLE_FORMAT.format(SITE, start_date, end_date)
+    users = [
+        (member["full_name"], member["email"])
+        for member in client.get_members()["members"]
+        if not member["is_bot"]
+    ]
+    send_email(users, subject, content)

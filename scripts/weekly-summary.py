@@ -257,7 +257,7 @@ def show_html_email(content):
 def main():
     end_date = datetime.datetime.now()
     weekday = end_date.strftime("%A")
-    if "DYNO" in env and weekday != env["HEROKU_CRON_DAY"]:
+    if "SENDGRID_API_KEY" in env and weekday != env["HEROKU_CRON_DAY"]:
         sys.exit("Not running script today - {}".format(weekday))
     start_date = end_date - datetime.timedelta(days=7)
     all_messages = get_messages_in_timeperiod(start_date, end_date)

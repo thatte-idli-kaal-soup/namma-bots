@@ -10,6 +10,7 @@ import urllib
 
 
 from lexrank import LexRank, STOPWORDS
+import markdown
 import jinja2
 import numpy as np
 import sendgrid
@@ -175,16 +176,13 @@ def create_email_body(messages, start_date, end_date, summarizer):
     env.install_null_translations()
     template = env.get_template("weekly-summary-template.html")
     title = TITLE_FORMAT.format(SITE, start_date, end_date)
-    import markdown
-
-    markdown = markdown.markdown
     return template.render(
         all_messages=messages,
         title=title,
         site=SITE,
         topic_narrow_url=topic_narrow_url,
         summarizer=summarizer,
-        markdown=markdown,
+        markdown=markdown.markdown,
     )
 
 

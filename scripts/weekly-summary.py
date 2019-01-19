@@ -8,7 +8,6 @@ from os.path import abspath, dirname, join
 import sys
 import urllib
 
-
 from lexrank import LexRank, STOPWORDS
 import markdown
 import jinja2
@@ -24,6 +23,8 @@ API_KEY = env.get("ZULIP_API_SECRET")
 SENDER_EMAIL = env.get("SENDER_EMAIL")
 SITE = EMAIL.split("@")[-1]
 TITLE_FORMAT = "{} weekly summary ({:%d %b} to {:%d %b})"
+LINK_RE = re.compile("(\[.*\]\(https{0,1}://.+\))|(https{0,1}://.+)")
+PUNCTUATION_RE = re.compile("([.?!])\s")
 client = zulip.Client(email=EMAIL, api_key=API_KEY, site=SITE)
 
 # #### Helpers to generate urls from zulip server repo: zerver.lib.url_encoding
@@ -78,7 +79,7 @@ class Summarizer:
             stopwords=STOPWORDS["en"],
         )
 
-    def get_summary(self, stream, topic):
+    def get_summary(self, stream, topic, show_url_list=True):
         document = self.documents[(stream, topic)]
         threshold = 0.03
         summary_size = 2 if len(document) > 5 else 1
@@ -88,12 +89,27 @@ class Summarizer:
         )
 
         sorted_ix = np.argsort(lex_scores)[::-1]
-        return [document[i] for i in sorted(sorted_ix[:summary_size])]
+        url_list = self.get_url_list(document) if show_url_list else []
+        return (
+            [document[i] for i in sorted(sorted_ix[:summary_size])],
+            url_list,
+        )
+
+    @staticmethod
+    def get_url_list(document):
+        links = [
+            "[{link}]({link})".format(link=plain_link)
+            if plain_link
+            else md_link
+            for sentence in document
+            for (md_link, plain_link) in LINK_RE.findall(sentence)
+        ]
+        return links
 
     @staticmethod
     def clean_content(message):
         content = message["content"]
-        return re.sub("([.?!])\s", "\\1\n", content)
+        return PUNCTUATION_RE.sub("\\1\n", content)
 
 
 ##########################################################################

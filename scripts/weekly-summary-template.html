@@ -90,6 +90,9 @@
              font-weight: inherit !important;
              line-height: inherit !important;
          }
+         a{
+             color: #aaaaaa !important;
+         }
         </style>
     </head>
 
@@ -132,14 +135,25 @@
                                                 {{ topic }}
                                             </a>
                                         </div>
-                                        <div class="body-text" style="font-family:Helvetica, Arial, sans-serif;font-size:14px;line-height:20px;text-align:left;color:#333333">
+                                        <div class="body-text" style="font-family:Helvetica, Arial, sans-serif;font-size:12px;font-weight:600;line-height:20px;text-align:left;color:#333333">
                                             {% trans count=messages|length %} {{ count }} message {% pluralize %}{{ count }} messages {% endtrans %} with {% trans count=messages|groupby('sender_email')|length %} {{ count }} participant {% pluralize %}{{ count }} participants {% endtrans %}
 
                                         </div>
                                         <div class="body-text" style="font-family:Helvetica, Arial, sans-serif;font-size:12px;line-height:20px;text-align:left;color:#333333">
-                                            {% for sentence in summarizer.get_summary(stream, topic) %}
+                                            {% set sentences, url_list = summarizer.get_summary(stream, topic) %}
+                                            {% for sentence in sentences %}
                                                 <div>{{ markdown(sentence)|safe }}</div>
                                             {% endfor %}
+                                            {% if url_list %}
+                                                <div class="topic-title" style="font-family:Helvetica, Arial, sans-serif;font-size:12px;line-height:14px;font-weight:300;color:#374550">
+                                                    External Links
+                                                </div>
+                                                {% for url in url_list %}
+                                                    <div style="font-family:Helvetica, Arial, sans-serif;font-size:12px;line-height:12px;">
+                                                        {{ markdown(url) }}
+                                                    </div>
+                                                {% endfor %}
+                                            {% endif %}
                                         </div>
                                         <br>
                                     {% endfor %}

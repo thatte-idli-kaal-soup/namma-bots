@@ -18,14 +18,10 @@ import zulip
 
 
 HERE = dirname(abspath(__file__))
-EMAIL = env.get("ZULIP_API_EMAIL")
-API_KEY = env.get("ZULIP_API_SECRET")
 SENDER_EMAIL = env.get("SENDER_EMAIL")
-SITE = EMAIL.split("@")[-1]
 TITLE_FORMAT = "{} weekly summary ({:%d %b} to {:%d %b})"
 LINK_RE = re.compile("(\[.*\]\(https{0,1}://.+\))|(https{0,1}://.+)")
 PUNCTUATION_RE = re.compile("([.?!])\s")
-client = zulip.Client(email=EMAIL, api_key=API_KEY, site=SITE)
 
 # #### Helpers to generate urls from zulip server repo: zerver.lib.url_encoding
 
@@ -258,7 +254,7 @@ def show_html_email(content):
         time.sleep(1)
 
 
-if __name__ == "__main__":
+def main():
     end_date = datetime.datetime.now()
     weekday = end_date.strftime("%A")
     if "DYNO" in env and weekday != env["HEROKU_CRON_DAY"]:
@@ -278,3 +274,22 @@ if __name__ == "__main__":
         send_email(users, subject, content)
     else:
         show_html_email(content)
+
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "zulip_api_email", help="Email ID of Zulip bot for fetching messages"
+    )
+    parser.add_argument(
+        "zulip_api_key", help="API KEY of Zulip bot for fetching messages"
+    )
+
+    args = parser.parse_args()
+    EMAIL = args.zulip_api_email
+    API_KEY = args.zulip_api_key
+    SITE = EMAIL.split("@")[-1]
+    client = zulip.Client(email=EMAIL, api_key=API_KEY, site=SITE)
+    main()

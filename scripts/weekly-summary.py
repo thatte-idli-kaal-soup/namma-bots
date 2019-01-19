@@ -20,7 +20,7 @@ import zulip
 HERE = dirname(abspath(__file__))
 SENDER_EMAIL = env.get("SENDER_EMAIL")
 TITLE_FORMAT = "{} weekly summary ({:%d %b} to {:%d %b})"
-LINK_RE = re.compile("(\[.*\]\(https{0,1}://.+\))|(https{0,1}://.+)")
+LINK_RE = re.compile("(\[.+?\]\(https{0,1}://.+?\))|(https{0,1}://.+)")
 PUNCTUATION_RE = re.compile("([.?!])\s")
 
 # #### Helpers to generate urls from zulip server repo: zerver.lib.url_encoding

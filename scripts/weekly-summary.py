@@ -268,7 +268,7 @@ def main():
     users = [
         (member["full_name"], member["email"])
         for member in client.get_members()["members"]
-        if not member["is_bot"]
+        if not member["is_bot"] and not member["is_guest"]
     ]
     if "SENDGRID_API_KEY" in env:
         send_email(users, subject, content)

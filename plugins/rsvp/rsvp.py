@@ -100,7 +100,7 @@ class RSVP(BotPlugin):
         except Exception:
             event_id = None
         if not event_id:
-            return "Could not find event"
+            return "Could not find event. Are there multiple events with the same name?"
 
         try:
             response = self.do_rsvp(event_id, sender_email)
@@ -122,7 +122,7 @@ class RSVP(BotPlugin):
         except Exception:
             event_id = None
         if not event_id:
-            return "Could not find event"
+            return "Could not find event. Are there multiple events with the same name?"
 
         event = self.get_event(event_id)
         names = [

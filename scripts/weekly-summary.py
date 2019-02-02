@@ -4,7 +4,7 @@ from collections import defaultdict
 import datetime
 from os import environ as env
 import re
-from os.path import abspath, dirname, join
+from os.path import abspath, dirname
 import sys
 import urllib
 

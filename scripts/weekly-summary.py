@@ -142,9 +142,13 @@ def group_messages_by_topic(messages):
     return by_topic
 
 
-def get_streams():
+def get_streams(ignored_streams):
     result = client.get_streams()
-    streams = result["streams"]
+    streams = [
+        stream
+        for stream in result["streams"]
+        if stream["name"] not in ignored_streams
+    ]
     return streams
 
 
@@ -165,8 +169,10 @@ def get_stream_messages(stream_name, start_date, end_date):
     return messages
 
 
-def get_messages_in_timeperiod(start_date, end_date):
-    streams = get_streams()
+def get_messages_in_timeperiod(start_date, end_date, ignored_streams=None):
+    if ignored_streams is None:
+        ignored_streams = set()
+    streams = get_streams(ignored_streams)
     all_messages = {}
     print("Fetching stream messages", end=" ")
     for stream in streams:
@@ -254,13 +260,15 @@ def show_html_email(content):
         time.sleep(1)
 
 
-def main():
+def main(ignored_streams):
     end_date = datetime.datetime.now()
     weekday = end_date.strftime("%A")
     if "SENDGRID_API_KEY" in env and weekday != env["HEROKU_CRON_DAY"]:
         sys.exit("Not running script today - {}".format(weekday))
     start_date = end_date - datetime.timedelta(days=7)
-    all_messages = get_messages_in_timeperiod(start_date, end_date)
+    all_messages = get_messages_in_timeperiod(
+        start_date, end_date, ignored_streams
+    )
     messages = sort_streams(all_messages)
     summarizer = Summarizer(all_messages)
     content = create_email_body(messages, start_date, end_date, summarizer)
@@ -286,10 +294,15 @@ if __name__ == "__main__":
     parser.add_argument(
         "zulip_api_key", help="API KEY of Zulip bot for fetching messages"
     )
-
+    parser.add_argument(
+        "ignored_streams",
+        type=str,
+        nargs="*",
+        help="streams to ignore, if any",
+    )
     args = parser.parse_args()
     EMAIL = args.zulip_api_email
     API_KEY = args.zulip_api_key
     SITE = EMAIL.split("@")[-1]
     client = zulip.Client(email=EMAIL, api_key=API_KEY, site=SITE)
-    main()
+    main(set(args.ignored_streams))

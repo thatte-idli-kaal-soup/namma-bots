@@ -1,0 +1,9 @@
+[Core]
+Name = Playlist
+Module = playlist
+
+[Documentation]
+Description = A plugin to create playlists in Zulip
+
+[Python]
+Version = 2+

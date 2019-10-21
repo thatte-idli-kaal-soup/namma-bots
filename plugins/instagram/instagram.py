@@ -3,7 +3,18 @@ import re
 
 import bs4
 from errbot import BotPlugin
+import socket
 import requests
+import requests.packages.urllib3.util.connection as urllib3_cn
+
+
+def allowed_gai_family():
+    family = socket.AF_INET  # force IPv4
+    return family
+
+
+# Force using IPv4 for the server where this code runs
+urllib3_cn.allowed_gai_family = allowed_gai_family
 
 JSON_DATA_RE = re.compile("window._sharedData = (.*);")
 MSG_FORMAT = """\

@@ -1,0 +1,9 @@
+[Core]
+Name = Instagram
+Module = instagram
+
+[Documentation]
+Description = A plugin to track specific instagram pages in specific topics
+
+[Python]
+Version = 2+

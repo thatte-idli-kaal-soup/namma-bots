@@ -35,7 +35,7 @@ class Instagram(BotPlugin):
     def fetch_updates(self):
         """Fetch updates from specific instagram accounts to specific topics."""
         self.log.info("Fetching updates from instagram... ")
-        for username, (topic, stream) in self.users.items():
+        for username, (stream, topic) in self.users.items():
             posts = fetch_instagram_updates(username)
             if not posts:
                 self.log.error("No posts found for: {}".format(username))

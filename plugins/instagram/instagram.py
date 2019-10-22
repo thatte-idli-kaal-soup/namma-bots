@@ -34,13 +34,14 @@ class Instagram(BotPlugin):
 
     def fetch_updates(self):
         """Fetch updates from specific instagram accounts to specific topics."""
-        self.log.info("Fetching updates from instagram... ")
         for username, (stream, topic) in self.users.items():
+            self.log.info("Fetching updates for {} ... ".format(username))
             posts = fetch_instagram_updates(username)
             if not posts:
                 self.log.error("No posts found for: {}".format(username))
                 continue
 
+            self.log.info("Found {} posts ".format(len(posts)))
             last_post_shorcode = self.get(username, None)
             if last_post_shorcode is None:
                 posts = posts[:1]

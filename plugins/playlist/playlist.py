@@ -7,7 +7,7 @@ def get_youtube_ids(text):
     # Taken from https://github.com/zulip/zulip/blob/b570c0dafa9cd8cf7d4b2af51c5cc8496197f405/zerver/lib/bugdown/__init__.py#L676
     schema_re = r"(?:https?://)"
     host_re = r"(?:youtu\.be/|(?:\w+\.)?youtube(?:-nocookie)?\.com/)"
-    param_re = r"(?:(?:(?:v|embed)/)|(?:(?:watch(?:_popup)?(?:\.php)?)?(?:\?|#!?)(?:.+&)?v=))"
+    param_re = r"(?:(?:(?:v|embed)/)|(?:(?:watch(?:_popup|_videos)?(?:\.php)?)?(?:\?|#!?)(?:.+&)?v=))"
     id_re = r"([0-9A-Za-z_-]+)"
     youtube_re = r"({schema_re}?{host_re}{param_re}?)?{id_re}(?(1).+)?"
     youtube_re = youtube_re.format(

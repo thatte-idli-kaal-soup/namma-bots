@@ -30,7 +30,9 @@ class Instagram(BotPlugin):
     """Plugin to track specific Instagram accounts in specific topics."""
 
     # Instagram to Zulip mapping
-    users = {"ultiid": ("Ultimate Frisbee", "International Game")}
+    users = {
+        # "ultiid": ("Ultimate Frisbee", "International Game")
+    }
 
     def fetch_updates(self):
         """Fetch updates from specific instagram accounts to specific topics."""

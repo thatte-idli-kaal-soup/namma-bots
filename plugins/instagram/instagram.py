@@ -31,7 +31,8 @@ class Instagram(BotPlugin):
 
     # Instagram to Zulip mapping
     users = {
-        # "ultiid": ("Ultimate Frisbee", "International Game")
+        # "ultiid": ("Ultimate Frisbee", "International Game"),
+        "punchagan": ("consciousness", "Punch")
     }
 
     def fetch_updates(self):

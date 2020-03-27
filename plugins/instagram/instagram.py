@@ -114,7 +114,8 @@ def fetch_instagram_updates(username):
     for post in posts:
         node = post["node"]
         image = node["display_url"]
-        description = node["edge_media_to_caption"]["edges"][0]["node"]["text"]
+        edges = node["edge_media_to_caption"]["edges"]
+        description = edges[0]["node"]["text"] if edges else "No Description"
         shortcode = node["shortcode"]
         parsed_posts.append(
             dict(image=image, description=description, shortcode=shortcode)

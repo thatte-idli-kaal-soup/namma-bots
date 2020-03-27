@@ -33,6 +33,20 @@ class Instagram(BotPlugin):
         # Instagram to Zulip mapping
         return {"punchagan": ("consciousness", "Punch")}
 
+    def check_configuration(self, config):
+        if config is None:
+            return
+        assert isinstance(config, dict)
+        assert all(
+            [isinstance(key, str) for key in config]
+        ), "Need usernames as keys"
+        assert all(
+            [
+                isinstance(val, tuple) and len(val) == 2
+                for val in config.values()
+            ]
+        ), "Need (stream, topic) tuple"
+
     def fetch_updates(self):
         """Fetch updates from specific Instagram accounts to specific topics."""
         for username, (stream, topic) in self.config.items():

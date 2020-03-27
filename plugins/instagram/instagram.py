@@ -29,15 +29,13 @@ https://instagram.com/p/{shortcode}
 class Instagram(BotPlugin):
     """Plugin to track specific Instagram accounts in specific topics."""
 
-    # Instagram to Zulip mapping
-    users = {
-        # "ultiid": ("Ultimate Frisbee", "International Game"),
-        "punchagan": ("consciousness", "Punch")
-    }
+    def get_configuration_template(self):
+        # Instagram to Zulip mapping
+        return {"punchagan": ("consciousness", "Punch")}
 
     def fetch_updates(self):
-        """Fetch updates from specific instagram accounts to specific topics."""
-        for username, (stream, topic) in self.users.items():
+        """Fetch updates from specific Instagram accounts to specific topics."""
+        for username, (stream, topic) in self.config.items():
             self.log.info("Fetching updates for {} ... ".format(username))
             posts = fetch_instagram_updates(username)
             if not posts:

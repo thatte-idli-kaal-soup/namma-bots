@@ -75,7 +75,8 @@ class Instagram(BotPlugin):
 
     def activate(self):
         super().activate()
-        self.start_poller(600, self.fetch_updates)
+        self.fetch_updates()
+        self.start_poller(86400, self.fetch_updates)
 
     def get_zulip_client(self):
         if hasattr(self._bot, "client"):

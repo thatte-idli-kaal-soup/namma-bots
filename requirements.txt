@@ -19,7 +19,7 @@ Flask==1.1.1
 html5lib==1.0.1
 idna==2.8
 itsdangerous==1.1.0
-Jinja2==2.11.1
+Jinja2==2.11.3
 lockfile==0.12.2
 Markdown==2.6.11
 MarkupSafe==1.1.1

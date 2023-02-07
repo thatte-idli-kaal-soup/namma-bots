@@ -9,7 +9,7 @@ click==7.1.1
 colorama==0.4.3
 colorlog==4.1.0
 contextlib2==0.6.0
-cryptography==2.8
+cryptography==39.0.1
 daemonize==2.5.0
 distlib==0.3.0
 distro==1.4.0

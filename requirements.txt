@@ -43,5 +43,5 @@ waitress==2.1.2
 webencodings==0.5.1
 WebOb==1.8.6
 WebTest==2.0.34
-Werkzeug==1.0.0
+Werkzeug==2.2.3
 zulip==0.6.4
